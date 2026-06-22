@@ -1,0 +1,16 @@
+# Ambientes Virtuais e Dependências
+backend/venv/
+backend/__pycache__/
+*.pyc
+
+# Variáveis de Ambiente e Chaves Sensíveis
+backend/.env
+.env
+*.env
+.env.*
+!.env.example
+
+# Outros
+.vscode/
+.idea/
+.DS_Store
