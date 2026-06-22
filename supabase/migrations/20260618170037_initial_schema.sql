@@ -77,48 +77,28 @@ ALTER TABLE public.physique_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.diet_logs ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.progression_rules ENABLE ROW LEVEL SECURITY;
 
--- RLS Policies
+-- RLS Policies (MVP Pessoal: Autenticado tem acesso total)
 
 -- Users
-CREATE POLICY "Users can view their own profile" ON public.users FOR SELECT USING (auth.uid() = id);
-CREATE POLICY "Users can update their own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
-CREATE POLICY "Users can insert their own profile" ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
+CREATE POLICY "Full access to authenticated users" ON public.users FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Exercises
-CREATE POLICY "Users can view global or own exercises" ON public.exercises FOR SELECT USING (user_id IS NULL OR user_id = auth.uid());
-CREATE POLICY "Users can insert own exercises" ON public.exercises FOR INSERT WITH CHECK (user_id = auth.uid());
-CREATE POLICY "Users can update own exercises" ON public.exercises FOR UPDATE USING (user_id = auth.uid());
-CREATE POLICY "Users can delete own exercises" ON public.exercises FOR DELETE USING (user_id = auth.uid());
+CREATE POLICY "Full access to authenticated users" ON public.exercises FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Workouts
-CREATE POLICY "Users can view their own workouts" ON public.workouts FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own workouts" ON public.workouts FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own workouts" ON public.workouts FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own workouts" ON public.workouts FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Full access to authenticated users" ON public.workouts FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Sets
-CREATE POLICY "Users can view their own sets" ON public.sets FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own sets" ON public.sets FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own sets" ON public.sets FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own sets" ON public.sets FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Full access to authenticated users" ON public.sets FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Physique Logs
-CREATE POLICY "Users can view their own physique logs" ON public.physique_logs FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own physique logs" ON public.physique_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own physique logs" ON public.physique_logs FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own physique logs" ON public.physique_logs FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Full access to authenticated users" ON public.physique_logs FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Diet Logs
-CREATE POLICY "Users can view their own diet logs" ON public.diet_logs FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own diet logs" ON public.diet_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own diet logs" ON public.diet_logs FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own diet logs" ON public.diet_logs FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Full access to authenticated users" ON public.diet_logs FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Progression Rules
-CREATE POLICY "Users can view their own progression rules" ON public.progression_rules FOR SELECT USING (auth.uid() = user_id);
-CREATE POLICY "Users can insert their own progression rules" ON public.progression_rules FOR INSERT WITH CHECK (auth.uid() = user_id);
-CREATE POLICY "Users can update their own progression rules" ON public.progression_rules FOR UPDATE USING (auth.uid() = user_id);
-CREATE POLICY "Users can delete their own progression rules" ON public.progression_rules FOR DELETE USING (auth.uid() = user_id);
+CREATE POLICY "Full access to authenticated users" ON public.progression_rules FOR ALL TO authenticated USING (true) WITH CHECK (true);
 
 -- Storage bucket for physique photos (non-public, strictly signed URLs)
 INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
@@ -126,8 +106,4 @@ VALUES ('physique_photos', 'physique_photos', false, 10485760, '{"image/jpeg","i
 ON CONFLICT (id) DO NOTHING;
 
 -- RLS for Storage Objects (only bucket_id = physique_photos)
--- Note: owner column in storage.objects is populated automatically by Supabase with auth.uid() if authenticated.
-CREATE POLICY "Users can upload their own photos" ON storage.objects FOR INSERT TO authenticated WITH CHECK (bucket_id = 'physique_photos' AND auth.uid() = owner);
-CREATE POLICY "Users can view their own photos" ON storage.objects FOR SELECT TO authenticated USING (bucket_id = 'physique_photos' AND auth.uid() = owner);
-CREATE POLICY "Users can update their own photos" ON storage.objects FOR UPDATE TO authenticated USING (bucket_id = 'physique_photos' AND auth.uid() = owner);
-CREATE POLICY "Users can delete their own photos" ON storage.objects FOR DELETE TO authenticated USING (bucket_id = 'physique_photos' AND auth.uid() = owner);
+CREATE POLICY "Full access to authenticated users" ON storage.objects FOR ALL TO authenticated USING (bucket_id = 'physique_photos') WITH CHECK (bucket_id = 'physique_photos');
