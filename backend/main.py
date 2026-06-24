@@ -4,9 +4,13 @@ import traceback
 import psutil
 import structlog
 from fastapi import FastAPI, Request
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
 from fastapi.exceptions import RequestValidationError
+from pydantic import BaseModel
 from dotenv import load_dotenv
+
+from services.ai import converse_with_assistant
 
 load_dotenv()
 
@@ -30,6 +34,15 @@ structlog.configure(
 logger = structlog.get_logger()
 
 app = FastAPI(title="Saas Rotina Backend", description="Hybrid AI Fitness API (MVP DevOps)")
+
+# Configuração de CORS para permitir requisições do Web App (Vite)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"], # No MVP local, liberamos tudo. Em prod: ["https://seu-app.com"]
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 # ==============================================================================
 # Regra #1 e #7: Middleware para Request ID único e Tracking de Tempo
@@ -98,3 +111,20 @@ def health_check():
     
     logger.info("health_check_ping", **health_data)
     return health_data
+
+# ==============================================================================
+# Endpoints do Agente Conversacional
+# ==============================================================================
+class ChatRequest(BaseModel):
+    message: str
+    history: list = [] # Lista de {"role": "...", "content": "..."}
+
+@app.post("/api/chat")
+def chat_with_assistant(request: ChatRequest):
+    # Envia o histórico e a nova mensagem para o Claude
+    response_data = converse_with_assistant(request.history, request.message)
+    
+    # Opcional: Se 'extracted_data' tiver dados novos (como peso), aqui nós chamaríamos
+    # o database.py para fazer o UPSERT no Supabase.
+    
+    return response_data.model_dump()
